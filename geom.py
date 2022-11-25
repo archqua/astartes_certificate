@@ -13,6 +13,9 @@ class Point2d:
     def transpose(self):
         return self.y, self.x
     
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y
+
     def __tuple__(self):
         return self.x, self.y
 

@@ -68,20 +68,24 @@ keeb_callbacks = (
 class AstartesCertificate:
     def __init__(self):
         pg.init()
+        self.screen = pg.display.set_mode((0, 0), pg.RESIZABLE)
         self.background = (0, 0, 0)
 
         pg.mouse.set_visible(False)
 
+        Player.loadImage("pic/ultramarine_default.png", scale=0.8)
+        self.player = Player()
+        self.player.setImage(Player.image)
+
         # TIMER_RESOLUTION == 0 for some reason
         # self.max_framerate = int(1 / pg.TIMER_RESOLUTION)
-        self.max_framerate = 60
-        self.player = Player()
+        self.max_framerate = 63
+        # 1000 / 60 == 16.67, 1000 / 63 = 15.87
 
     def deinit(self):
         pg.quit()
 
     def prelude(self):
-        self.screen = pg.display.set_mode((0, 0), pg.RESIZABLE)
         self.player.posf = Point2d(
             self.screen.get_width() * 0.5,
             self.screen.get_height() * 0.5,
@@ -103,7 +107,8 @@ class AstartesCertificate:
 
             # time change independent stuff
 
-            self.player.linear_velocity = user_io.normalizedMovement()
+            accel_direction = user_io.normalizedMovement()
+            # self.player.linear_velocity = user_io.normalizedMovement()
 
             self.screen.fill(self.background)
 
@@ -111,14 +116,9 @@ class AstartesCertificate:
             self.clock.tick(self.max_framerate)
             dt = self.clock.get_time()
 
+            self.player.accelerate(dt, accel_direction)
             self.player.move(dt)
-            player_pos = self.player.pos()
-            pg.draw.circle(
-                self.screen,
-                self.player.color,
-                center = player_pos,
-                radius = 20,
-            )
+            self.player.draw(self.screen)
 
             # drawing ui
             ui.drawUI(self.screen)
