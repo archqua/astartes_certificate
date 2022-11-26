@@ -5,6 +5,11 @@ class Point2d:
         self.x = x
         self.y = y
 
+    def floated(self):
+        return Point2d(float(self.x), float(self.y))
+    def inted(self):
+        return Point2d(int(self.x), int(self.y))
+
     def floats(self):
         return float(self.x), float(self.y)
     def ints(self):
@@ -45,4 +50,7 @@ class Point2d:
 
     def renormalize(self, new_norm=1.0):
         return self.normalize() * new_norm
+
+    def __repr__(self):
+        return f"(x = {self.x}, y = {self.y})"
 

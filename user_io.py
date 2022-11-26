@@ -24,6 +24,11 @@ class KeyboardInput:
     def unrightCb():
         KeyboardInput.right_pressed = False
 
+class MouseInput:
+    lmb_pressed = False
+    rmb_pressed = False
+    cursor_pos = Point2d(0.0, 0.0)
+
 
 def fwdProj():
     return float(KeyboardInput.fwd_pressed) - float(KeyboardInput.bwd_pressed)
