@@ -191,13 +191,7 @@ class AstartesCertificate:
                                 self.kills_before_spawn_mode_update += self.kills_before_spawn_mode_inc
                                 self.kills_before_spawn_mode_inc += 1
                                 self.kills_before_spawn_mode_update_remain = self.kills_before_spawn_mode_update
-                                print("now enemies spawn each", self.time_before_enemy_spawn, "ms")
-                            # self.time_before_enemy_spawn = 2000
-                            # self.time_before_enemy_spawn_remain = 2000
-                            # self.min_time_before_enemy_spawn = 800
-                            # self.enemy_spawn_period_dec = 120
-                            # self.kills_before_spawn_mode_update = 1
-                            # self.kills_before_spawn_mode_update_remain = 1
+                                # print("now enemies spawn each", self.time_before_enemy_spawn, "ms")
                 if self.player.posf.distToSegment(projectile.posf, projectile.prev_posf) < self.player.size:
                     self.player.receiveDamage()
                     if self.player.health == 1:
@@ -255,9 +249,9 @@ class AstartesCertificate:
 
     def spawnOrcShooter(self, pos=None):
         if pos is None:
-            pos = self.enemy_spawn_positions[
+            pos = Point2d(self.enemy_spawn_positions[
                 random.randint(0, len(self.enemy_spawn_positions) - 1)
-            ]
+            ])
             xoffset = (random.random() - 0.5) * 100 # +- 50
             yoffset = (random.random() - 0.5) * 100 # +- 50
             pos.x += xoffset
