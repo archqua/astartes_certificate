@@ -11,6 +11,8 @@ from geom import Point2d
 import player
 from player import Player
 import armory
+import enemy
+from enemy import OrcShooter
 
 
 # I don't wish to check if cursor pos assignment is necessary in clickers
@@ -53,9 +55,9 @@ keeb_callbacks = (
         pg.K_a: KeyboardInput.leftCb,
         pg.K_w: KeyboardInput.bwdCb,
         pg.K_d: KeyboardInput.rightCb,
-        pg.K_UP:    KeyboardInput.fwdCb,
+        pg.K_UP:    KeyboardInput.bwdCb,
         pg.K_LEFT:  KeyboardInput.leftCb,
-        pg.K_DOWN:  KeyboardInput.bwdCb,
+        pg.K_DOWN:  KeyboardInput.fwdCb,
         pg.K_RIGHT: KeyboardInput.rightCb,
     },
     {
@@ -63,9 +65,9 @@ keeb_callbacks = (
         pg.K_a: KeyboardInput.unleftCb,
         pg.K_w: KeyboardInput.unbwdCb,
         pg.K_d: KeyboardInput.unrightCb,
-        pg.K_UP:    KeyboardInput.unfwdCb,
+        pg.K_UP:    KeyboardInput.unbwdCb,
         pg.K_LEFT:  KeyboardInput.unleftCb,
-        pg.K_DOWN:  KeyboardInput.unbwdCb,
+        pg.K_DOWN:  KeyboardInput.unfwdCb,
         pg.K_RIGHT: KeyboardInput.unrightCb,
     },
 )
@@ -74,11 +76,13 @@ keeb_callbacks = (
 class AstartesCertificate:
     def __init__(self):
         pg.init()
-        self.screen = pg.display.set_mode((0, 0), pg.RESIZABLE)
-        self.background = (0, 128, 0)
+        self.screen = pg.display.set_mode((0, 0), pg.NOFRAME)
+        self.background = (0, 96, 0)
 
         # modules need to finish initialization after pg.display.set_mode()
         player.prelude()
+        enemy.prelude()
+        armory.prelude()
 
         self.player = Player()
         # self.player.setImage(Player.image)
@@ -103,6 +107,10 @@ class AstartesCertificate:
 
         # create empty groups
         self.projectiles = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
+
+        orc = OrcShooter.spawn((200, 200), groups=(self.enemies,))
+        armory.arm(orc, armory.Bolter, groups=(self.projectiles,))
 
         # arm units
         armory.arm(self.player, armory.Bolter, groups=(self.projectiles,))
@@ -145,20 +153,43 @@ class AstartesCertificate:
                     projectile.kill()
                 if projectile.posf.y > 1200 or projectile.posf.y < -100:
                     projectile.kill()
+                for enemy in self.enemies.sprites():
+                    if enemy.posf.distToSegment(projectile.posf, projectile.prev_posf) < enemy.size:
+                        enemy.receiveDamage()
+                        if enemy.mustDie():
+                            enemy.kill()
+                if self.player.posf.distToSegment(projectile.posf, projectile.prev_posf) < self.player.size:
+                    self.player.receiveDamage()
+                    if self.player.health == 1:
+                        self.background = (32, 64, 0)
 
-            self.player.update(dt, accel_direction, user_io.MouseInput.cursor_pos)
-            if user_io.MouseInput.lmb_pressed:
-                self.player.fire(user_io.MouseInput.cursor_pos)
+            if not self.player.mustDie():
+                self.player.update(dt, accel_direction, user_io.MouseInput.cursor_pos)
+                if user_io.MouseInput.lmb_pressed:
+                    self.player.fire(user_io.MouseInput.cursor_pos)
 
+            for enemy in self.enemies.sprites():
+                enemy.update(dt, self.player.posf)
+                enemy.fire(self.player.posf)
 
-            self.player.draw(self.screen)
+            # drawing
+            ui.Player.update(self.player)
+            ui.drawBack(self.screen)
+
+            self.projectiles.draw(self.screen)
+            # self.enemies.draw(self.screen)
+            for enemy in self.enemies.sprites():
+                enemy.draw(self.screen)
+                enemy.drawCircle(self.screen)
+            if not self.player.mustDie():
+                self.player.draw(self.screen)
+                self.player.drawCircle(self.screen)
+            # print(self.enemies)
             # TODO
-            # self.projectiles.draw(self.screen)
-            for sprite in self.projectiles.sprites():
-                sprite.draw(self.screen)
+            # for sprite in self.projectiles.sprites():
+            #     sprite.draw(self.screen)
 
-            # drawing ui
-            ui.drawUI(self.screen)
+            ui.drawFront(self.screen)
 
             pg.display.update()
 
