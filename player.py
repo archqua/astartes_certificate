@@ -14,8 +14,8 @@ class Player(unit.Armed):
     accel_time = 500
     max_velocity = 0.3
 
-    def __init__(self, image=None, groups=tuple(), armor_restore_time=3000):
-        unit.Armed.__init__(self, image = image or Player.image, groups = groups, max_health = 2, max_armor=2)
+    def __init__(self, image=None, groups=tuple(), armor_restore_time=500):
+        unit.Armed.__init__(self, image = image or Player.image, groups = groups, max_health = 2, max_armor=3)
         self.armor_restore_time = armor_restore_time
         self.armor_restore_time_remain = armor_restore_time
 
@@ -49,7 +49,6 @@ class Player(unit.Armed):
         if self.armor < self.max_armor:
             if self.armor_restore_time_remain < 0:
                 self.restoreArmor()
-                print("restoring armor", self.armor)
                 self.armor_restore_time_remain = self.armor_restore_time
             else:
                 self.armor_restore_time_remain -= dt

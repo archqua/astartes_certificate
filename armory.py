@@ -8,11 +8,11 @@ def prelude():
     Bolter.loadImages()
     Bullet.loadImages()
 
-def arm(unit, weapon_ctor, groups=tuple(), weapon_images=None, init_cooldown=500):
+def arm(unit, weapon_ctor, groups=tuple(), weapon_images=None, init_cooldown=0, **weapon_kwargs):
     assert type(groups) is tuple, "please, pass groups as tuple"
     if unit.weapon is not None:
         unit.weapon.kill()
-    unit.weapon = weapon_ctor(images=weapon_images, groups=groups)
+    unit.weapon = weapon_ctor(images=weapon_images, groups=groups, **weapon_kwargs)
     unit.weapon.remain_cooldown = init_cooldown
 
 class Weapon(pg.sprite.Sprite):

@@ -17,7 +17,7 @@ class Player:
     pos = (0, 0)
 
     armor_color = (192, 192, 255)
-    armor_radii = [22, 25]
+    armor_radii = [22, 25, 28]
     def update(player):
         Player.health = player.health
         Player.armor = player.armor

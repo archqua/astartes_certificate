@@ -4,6 +4,8 @@ os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 import pygame as pg
 pg.init() # pygame is anyway inited in modules, so no point to postpone
 
+import random
+
 import user_io
 from user_io import KeyboardInput, MouseInput
 import ui
@@ -87,6 +89,21 @@ class AstartesCertificate:
         self.player = Player()
         # self.player.setImage(Player.image)
 
+        screen_width, screen_height = self.screen.get_size()
+        xspawnspace = screen_width - 200
+        yspawnspace = screen_height - 200
+        self.enemy_spawn_positions = [
+            Point2d(100.0,                       100.0),
+            Point2d(100.0 + xspawnspace / 3,     100.0),
+            Point2d(100.0 + xspawnspace * 2 / 3, 100.0),
+            Point2d(100.0 + xspawnspace,         100.0),
+            Point2d(100.0 + xspawnspace,         100.0 + yspawnspace / 2),
+            Point2d(100.0 + xspawnspace,         100.0 + yspawnspace),
+            Point2d(100.0 + xspawnspace * 2 / 3, 100.0 + yspawnspace),
+            Point2d(100.0 + xspawnspace / 3,     100.0 + yspawnspace),
+            Point2d(100.0,                       100.0 + yspawnspace),
+            Point2d(100.0,                       100.0 + yspawnspace / 2)
+        ]
         # TIMER_RESOLUTION == 0 for some reason
         # self.max_framerate = int(1 / pg.TIMER_RESOLUTION)
         self.max_framerate = 63
@@ -109,11 +126,16 @@ class AstartesCertificate:
         self.projectiles = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
 
-        orc = OrcShooter.spawn((200, 200), groups=(self.enemies,))
-        armory.arm(orc, armory.Bolter, groups=(self.projectiles,))
-
         # arm units
         armory.arm(self.player, armory.Bolter, groups=(self.projectiles,))
+
+        self.time_before_enemy_spawn = 2120
+        self.time_before_enemy_spawn_remain = 2120
+        self.min_time_before_enemy_spawn = 800
+        self.enemy_spawn_period_dec = 120
+        self.kills_before_spawn_mode_update = 1
+        self.kills_before_spawn_mode_update_remain = 1
+        self.kills_before_spawn_mode_inc = 5
 
         # last thing to do in prelude
         self.clock = pg.time.Clock()
@@ -145,29 +167,67 @@ class AstartesCertificate:
             dt = self.clock.get_time()
 
             self.projectiles.update(dt)
-
+            
+            screen_width, screen_height = self.screen.get_size()
             for projectile in self.projectiles:
                 # TODO change to projectile.rect.center checks
                 # TODO get actual window dimensions???
-                if projectile.posf.x > 2000 or projectile.posf.x < -100:
+                if projectile.posf.x > screen_width + 100 or projectile.posf.x < -100:
                     projectile.kill()
-                if projectile.posf.y > 1200 or projectile.posf.y < -100:
+                if projectile.posf.y > screen_height + 100 or projectile.posf.y < -100:
                     projectile.kill()
                 for enemy in self.enemies.sprites():
                     if enemy.posf.distToSegment(projectile.posf, projectile.prev_posf) < enemy.size:
                         enemy.receiveDamage()
                         if enemy.mustDie():
                             enemy.kill()
+                            self.kills_before_spawn_mode_update_remain -= 1
+                            if self.kills_before_spawn_mode_update_remain <= 0:
+                                self.time_before_enemy_spawn -= self.enemy_spawn_period_dec
+                                self.time_before_enemy_spawn = max(
+                                        self.time_before_enemy_spawn,
+                                        self.min_time_before_enemy_spawn
+                                    )
+                                self.kills_before_spawn_mode_update += self.kills_before_spawn_mode_inc
+                                self.kills_before_spawn_mode_inc += 1
+                                self.kills_before_spawn_mode_update_remain = self.kills_before_spawn_mode_update
+                                print("now enemies spawn each", self.time_before_enemy_spawn, "ms")
+                            # self.time_before_enemy_spawn = 2000
+                            # self.time_before_enemy_spawn_remain = 2000
+                            # self.min_time_before_enemy_spawn = 800
+                            # self.enemy_spawn_period_dec = 120
+                            # self.kills_before_spawn_mode_update = 1
+                            # self.kills_before_spawn_mode_update_remain = 1
                 if self.player.posf.distToSegment(projectile.posf, projectile.prev_posf) < self.player.size:
                     self.player.receiveDamage()
                     if self.player.health == 1:
                         self.background = (32, 64, 0)
 
             if not self.player.mustDie():
+                if self.player.posf.x < 0:
+                    self.player.posf.x *= -1
+                    self.player.linear_velocity.x *= -1
+                    accel_direction.x *= -1
+                elif self.player.posf.x > screen_width:
+                    self.player.posf.x = 2*screen_width - self.player.posf.x
+                    self.player.linear_velocity.x *= -1
+                    accel_direction.x *= -1
+                if self.player.posf.y < 0:
+                    self.player.posf.y *= -1
+                    self.player.linear_velocity.y *= -1
+                    accel_direction.y *= -1
+                elif self.player.posf.y > screen_height:
+                    self.player.posf.y = 2*screen_height - self.player.posf.y
+                    self.player.linear_velocity.y *= -1
+                    accel_direction.y *= -1
                 self.player.update(dt, accel_direction, user_io.MouseInput.cursor_pos)
                 if user_io.MouseInput.lmb_pressed:
                     self.player.fire(user_io.MouseInput.cursor_pos)
 
+            self.time_before_enemy_spawn_remain -= dt
+            if self.time_before_enemy_spawn_remain <= 0:
+                self.spawnOrcShooter()
+                self.time_before_enemy_spawn_remain = self.time_before_enemy_spawn
             for enemy in self.enemies.sprites():
                 enemy.update(dt, self.player.posf)
                 enemy.fire(self.player.posf)
@@ -193,6 +253,18 @@ class AstartesCertificate:
 
             pg.display.update()
 
+    def spawnOrcShooter(self, pos=None):
+        if pos is None:
+            pos = self.enemy_spawn_positions[
+                random.randint(0, len(self.enemy_spawn_positions) - 1)
+            ]
+            xoffset = (random.random() - 0.5) * 100 # +- 50
+            yoffset = (random.random() - 0.5) * 100 # +- 50
+            pos.x += xoffset
+            pos.y += yoffset
+        orc = OrcShooter.spawn(pos.ints(), groups=(self.enemies,))
+        armory.arm(orc, armory.Bolter, groups=(self.projectiles,), init_cooldown=500, cooldown=240)
+        
 
 if __name__ == "__main__":
     game = AstartesCertificate()
