@@ -170,14 +170,15 @@ class AstartesCertificate:
             
             screen_width, screen_height = self.screen.get_size()
             for projectile in self.projectiles:
+                # TODO is it OK to kill projectiles in this loop?
                 # TODO change to projectile.rect.center checks
-                # TODO get actual window dimensions???
                 if projectile.posf.x > screen_width + 100 or projectile.posf.x < -100:
                     projectile.kill()
                 if projectile.posf.y > screen_height + 100 or projectile.posf.y < -100:
                     projectile.kill()
                 for enemy in self.enemies.sprites():
                     if enemy.posf.distToSegment(projectile.posf, projectile.prev_posf) < enemy.size:
+                        projectile.kill()
                         enemy.receiveDamage()
                         if enemy.mustDie():
                             enemy.kill()
@@ -192,10 +193,12 @@ class AstartesCertificate:
                                 self.kills_before_spawn_mode_inc += 1
                                 self.kills_before_spawn_mode_update_remain = self.kills_before_spawn_mode_update
                                 # print("now enemies spawn each", self.time_before_enemy_spawn, "ms")
-                if self.player.posf.distToSegment(projectile.posf, projectile.prev_posf) < self.player.size:
-                    self.player.receiveDamage()
-                    if self.player.health == 1:
-                        self.background = (32, 64, 0)
+                if not self.player.mustDie():
+                    if self.player.posf.distToSegment(projectile.posf, projectile.prev_posf) < self.player.size:
+                        projectile.kill()
+                        self.player.receiveDamage()
+                        if self.player.health == 1:
+                            self.background = (32, 64, 0)
 
             if not self.player.mustDie():
                 if self.player.posf.x < 0:

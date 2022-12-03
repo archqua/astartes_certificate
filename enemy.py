@@ -15,8 +15,9 @@ class Enemy(unit.Armed):
 
 class OrcShooter(Enemy):
     images = []
-    def __init__(self, image_n=None, groups=None):
+    def __init__(self, image_n=None, groups=None, inv_accuracy=0.06):
         Enemy.__init__(self, image=OrcShooter.getHeadImage(image_n), groups=groups)
+        self.inv_accuracy = inv_accuracy
 
     def getHeadImage(img_num = None):
         return OrcShooter.images[img_num or random.randint(0, len(OrcShooter.images)-1)]
@@ -28,6 +29,9 @@ class OrcShooter(Enemy):
     def update(self, dt, player_posf):
         self.move(dt)
         direction = (player_posf - self.posf)#.normalize()
+        dev = (random.random() - 0.5) * self.inv_accuracy
+        # cos and sin approximated
+        direction = direction.rotateByCosSin(1.0 - (dev**2)/2, dev)
         self.hold_direction = direction
         self.aim_direction = direction
         Enemy.update(self, dt, self.hold_direction, self.aim_direction)
