@@ -10,11 +10,14 @@ import user_io
 from user_io import KeyboardInput, MouseInput
 import ui
 from geom import Point2d
+
 import player
 from player import Player
 import armory
 import enemy
 from enemy import OrcShooter
+
+import music
 
 
 # I don't wish to check if cursor pos assignment is necessary in clickers
@@ -61,6 +64,7 @@ keeb_callbacks = (
         pg.K_LEFT:  KeyboardInput.leftCb,
         pg.K_DOWN:  KeyboardInput.fwdCb,
         pg.K_RIGHT: KeyboardInput.rightCb,
+        pg.K_ESCAPE: KeyboardInput.escCb,
     },
     {
         pg.K_s: KeyboardInput.unfwdCb,
@@ -112,6 +116,7 @@ class AstartesCertificate:
         self.ready = False
 
     def deinit(self):
+        music.stop()
         pg.quit()
 
     def prelude(self): # is called at the beginning of mainLoop()
@@ -137,6 +142,10 @@ class AstartesCertificate:
         self.kills_before_spawn_mode_update_remain = 1
         self.kills_before_spawn_mode_inc = 5
 
+        # music
+        music.loadPlaylist()
+        music.start()
+
         # last thing to do in prelude
         self.clock = pg.time.Clock()
         self.clock.tick()
@@ -154,6 +163,8 @@ class AstartesCertificate:
                     running = False
                 elif event.type in event_callbacks:
                     event_callbacks[event.type](event)
+                elif event.type == music.song_finished:
+                    music.queueNextSong()
 
             # time change independent stuff
 

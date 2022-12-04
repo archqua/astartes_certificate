@@ -1,4 +1,5 @@
 from geom import Point2d
+import pygame as pg
 
 # keyboard
 class KeyboardInput:
@@ -23,6 +24,9 @@ class KeyboardInput:
         KeyboardInput.right_pressed = True
     def unrightCb():
         KeyboardInput.right_pressed = False
+
+    def escCb():
+        pg.event.post(pg.event.Event(pg.QUIT))
 
 class MouseInput:
     lmb_pressed = False
