@@ -136,7 +136,7 @@ class AstartesCertificate:
 
         self.time_before_enemy_spawn = 2120
         self.time_before_enemy_spawn_remain = 2120
-        self.min_time_before_enemy_spawn = 800
+        self.min_time_before_enemy_spawn = 720 # this makes the last decrement 80 rather than 120
         self.enemy_spawn_period_dec = 120
         self.kills_before_spawn_mode_update = 1
         self.kills_before_spawn_mode_update_remain = 1
