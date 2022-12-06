@@ -26,6 +26,7 @@ class KeyboardInput:
         KeyboardInput.right_pressed = False
 
     def escCb():
+        # TODO not post events in this module
         pg.event.post(pg.event.Event(pg.QUIT))
 
 class MouseInput:
