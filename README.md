@@ -1,7 +1,7 @@
 # Astartes Certificate
 ## Description
 IIII python course final project.
-The concept is spacemarine fighting with sad music in background.
+The concept is spacemarine fighting while sad music is playing in background.
 No fun, no scores, no achievements, no winning.
 Our choice of music is the group "Death Certificate" (rus Свидетельство о Смерти).
 
