@@ -248,10 +248,10 @@ class AstartesCertificate:
             # self.enemies.draw(self.screen)
             for enemy in self.enemies.sprites():
                 enemy.draw(self.screen)
-                enemy.drawCircle(self.screen)
+                # enemy.drawCircle(self.screen)
             if not self.player.mustDie():
                 self.player.draw(self.screen)
-                self.player.drawCircle(self.screen)
+                # self.player.drawCircle(self.screen)
             # print(self.enemies)
             # TODO
             # for sprite in self.projectiles.sprites():

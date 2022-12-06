@@ -172,10 +172,10 @@ class Bolter(Weapon):
         angle = -Point2d(1.0, 0.0).angNormed(self.point_to)
         rotated = pg.transform.rotate(self.image, math.degrees(angle))
         surface.blit(rotated, self.rect)
-        pg.draw.circle(
-            surface, (255, 0, 0),
-            center = self.outlet.ints(), radius = 2,
-        )
+        # pg.draw.circle(
+        #     surface, (255, 0, 0),
+        #     center = self.outlet.ints(), radius = 2,
+        # )
 
     def fire(self, where, bullet_vel = 3.0):
         if self.remain_cooldown <= 0:
